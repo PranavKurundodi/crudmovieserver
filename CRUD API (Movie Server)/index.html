@@ -1,1 +1,126 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie CRUD App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Movie CRUD App</h1>
+
+    <h2>Add Movie</h2>
+    <input type="text" id="isbn" placeholder="ISBN" required>
+    <input type="text" id="title" placeholder="Title" required>
+    <input type="text" id="directorFirstName" placeholder="Director First Name" required>
+    <input type="text" id="directorLastName" placeholder="Director Last Name" required>
+    <button onclick="addMovie()">Add Movie</button>
+
+    <h2>Movies List</h2>
+    <table id="moviesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ISBN</th>
+                <th>Title</th>
+                <th>Director</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="moviesBody"></tbody>
+    </table>
+
+    <script>
+        const apiUrl = 'https://your-project-name.vercel.app/movies'; // Replace with your Vercel API URL
+
+        // Fetch and display movies
+        async function fetchMovies() {
+            const response = await fetch(apiUrl);
+            const movies = await response.json();
+            const moviesBody = document.getElementById('moviesBody');
+            moviesBody.innerHTML = '';
+
+            movies.forEach(movie => {
+                const row = `
+                    <tr>
+                        <td>${movie.id}</td>
+                        <td>${movie.isbn}</td>
+                        <td>${movie.title}</td>
+                        <td>${movie.director.firstname} ${movie.director.lastname}</td>
+                        <td>
+                            <button onclick="deleteMovie('${movie.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                moviesBody.innerHTML += row;
+            });
+        }
+
+        // Add a new movie
+        async function addMovie() {
+            const isbn = document.getElementById('isbn').value;
+            const title = document.getElementById('title').value;
+            const directorFirstName = document.getElementById('directorFirstName').value;
+            const directorLastName = document.getElementById('directorLastName').value;
+
+            const newMovie = {
+                isbn: isbn,
+                title: title,
+                director: {
+                    firstname: directorFirstName,
+                    lastname: directorLastName
+                }
+            };
+
+            await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newMovie),
+            });
+
+            fetchMovies(); // Refresh the movie list
+        }
+
+        // Delete a movie
+        async function deleteMovie(id) {
+            await fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE',
+            });
+
+            fetchMovies(); // Refresh the movie list
+        }
+
+        // Initial fetch of movies
+        fetchMovies();
+    </script>
+</body>
+</html>
